@@ -128,7 +128,7 @@
     margin-bottom: 0.5rem;
   }
   
-  .dropzone-container {
+  :global(.dropzone-container) {
     border: 2px dashed #ccc;
     border-radius: 8px;
     padding: 2rem;
@@ -137,7 +137,7 @@
     transition: border-color 0.2s;
   }
   
-  .dropzone-container:hover {
+  :global(.dropzone-container:hover) {
     border-color: #0066cc;
   }
   
@@ -155,22 +155,22 @@
     margin-top: 0.5rem;
   }
   
-  .dropzone-active {
+  :global(.dropzone-active) {
     border-color: #0066cc;
     background-color: rgba(0, 102, 204, 0.05);
   }
   
-  .dropzone-accept {
+  :global(.dropzone-accept) {
     border-color: #28a745;
     background-color: rgba(40, 167, 69, 0.05);
   }
   
-  .dropzone-reject {
+  :global(.dropzone-reject) {
     border-color: #dc3545;
     background-color: rgba(220, 53, 69, 0.05);
   }
   
-  .dropzone-disabled {
+  :global(.dropzone-disabled) {
     opacity: 0.6;
     cursor: not-allowed;
   }
