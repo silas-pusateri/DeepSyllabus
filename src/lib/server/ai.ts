@@ -1,16 +1,50 @@
 import OpenAI from 'openai';
 import type { AIResponse, CourseFile, GenerateSyllabusRequest } from '$lib/types';
-import { OPENAI_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
-const openai = new OpenAI({
-  apiKey: OPENAI_API_KEY
-});
+// Check if we're in development mode
+const isDevelopmentMode = !env.OPENAI_API_KEY || process.env.NODE_ENV === 'development';
+
+let openai: OpenAI | null = null;
+
+// Initialize OpenAI client if API key is available
+if (!isDevelopmentMode) {
+  openai = new OpenAI({
+    apiKey: env.OPENAI_API_KEY
+  });
+}
+
+// Mock responses for development mode
+const mockVideoResponse = {
+  idea: "A comprehensive video explaining the key concepts of the course topic with visual aids and examples",
+  link: "https://www.youtube.com/watch?v=example"
+};
+
+const mockExplanationResponse = {
+  content: "This is a comprehensive explanation of the course topic. It covers all the necessary concepts and provides detailed information for students to understand the subject matter.",
+  sections: ["Introduction to the Topic", "Key Concepts", "Practical Applications", "Advanced Techniques", "Summary and Next Steps"]
+};
+
+const mockAssessmentResponse = {
+  type: "quiz",
+  content: "1. What is the main concept covered in this course?\n2. Explain the relationship between the key topics.\n3. Apply the concepts to solve the following problem..."
+};
 
 /**
  * Generate a syllabus from a synopsis and optional course files
  */
 export async function generateSyllabus(request: GenerateSyllabusRequest): Promise<AIResponse> {
   const { synopsis, files } = request;
+  
+  // Return mock data in development mode
+  if (isDevelopmentMode) {
+    console.log('[DEV] Using mock AI response for syllabus generation');
+    return {
+      video: mockVideoResponse,
+      explanation: mockExplanationResponse,
+      assessment: mockAssessmentResponse
+    };
+  }
   
   // Build the prompt including file information if available
   let filesContext = '';
@@ -37,7 +71,7 @@ ${synopsis}
 Respond with a JSON object containing a video suggestion, a detailed explanation, and a learning assessment.`;
 
   try {
-    const response = await openai.chat.completions.create({
+    const response = await openai!.chat.completions.create({
       model: 'gpt-4-turbo',
       messages: [
         { role: 'system', content: systemPrompt },
@@ -77,6 +111,19 @@ export async function regenerateComponent(
   synopsis: string,
   feedback?: string
 ): Promise<any> {
+  // Return mock data in development mode
+  if (isDevelopmentMode) {
+    console.log(`[DEV] Using mock AI response for ${componentType} regeneration`);
+    
+    if (componentType === 'video') {
+      return mockVideoResponse;
+    } else if (componentType === 'explanation') {
+      return mockExplanationResponse;
+    } else {
+      return mockAssessmentResponse;
+    }
+  }
+  
   const componentPrompts = {
     video: 'Generate a video resource suggestion with an idea and optional link.',
     explanation: 'Generate a detailed written explanation divided into logical sections.',
@@ -93,7 +140,7 @@ ${synopsis}
 ${componentPrompts[componentType]}`;
 
   try {
-    const response = await openai.chat.completions.create({
+    const response = await openai!.chat.completions.create({
       model: 'gpt-4-turbo',
       messages: [
         { role: 'system', content: systemPrompt },

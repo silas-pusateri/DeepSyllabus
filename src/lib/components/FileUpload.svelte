@@ -61,7 +61,7 @@
   }
 </script>
 
-<div class="file-upload">
+<div class="file-upload neu-card">
   <h3>Upload Course Materials</h3>
   
   <DropZone
@@ -80,7 +80,7 @@
       {#if isUploading}
         <div class="uploading">
           <p>Uploading... {uploadProgress}%</p>
-          <progress value={uploadProgress} max="100"></progress>
+          <progress value={uploadProgress} max="100" class="neu-inset"></progress>
         </div>
       {:else}
         <div class="dropzone-text">
@@ -92,18 +92,18 @@
   </DropZone>
   
   {#if error}
-    <div class="error-message">{error}</div>
+    <div class="error-message neu-inset">{error}</div>
   {/if}
   
   {#if files.length > 0}
-    <div class="files-list">
+    <div class="files-list neu-inset">
       <h4>Uploaded Files</h4>
       <ul>
         {#each files as file}
           <li>
             <span class="file-name">{file.name}</span>
             <span class="file-size">({formatFileSize(file.size)})</span>
-            <button class="remove-button" on:click={() => handleRemoveFile(file.id)}>
+            <button class="remove-button neu-button" on:click={() => handleRemoveFile(file.id)}>
               Remove
             </button>
           </li>
@@ -115,30 +115,40 @@
 
 <style>
   .file-upload {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
   }
   
   h3 {
     font-size: 1.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    font-family: 'Montserrat', sans-serif;
+    color: var(--primary-color);
+    text-shadow: 1px 1px 1px var(--shadow-light), 
+                -1px -1px 1px var(--shadow-dark);
+    text-align: center;
   }
   
   h4 {
     font-size: 1.2rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    font-family: 'Montserrat', sans-serif;
+    color: var(--primary-dark);
   }
   
   :global(.dropzone-container) {
-    border: 2px dashed #ccc;
-    border-radius: 8px;
+    border: 2px dashed var(--shadow-dark);
+    border-radius: var(--border-radius);
     padding: 2rem;
     text-align: center;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: all 0.3s ease;
+    background: var(--bg-color);
   }
   
   :global(.dropzone-container:hover) {
-    border-color: #0066cc;
+    border-color: var(--primary-color);
+    box-shadow: inset 3px 3px 7px var(--shadow-dark), 
+                inset -3px -3px 7px var(--shadow-light);
   }
   
   .dropzone-text {
@@ -146,28 +156,36 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 120px;
+    min-height: 130px;
+  }
+
+  .dropzone-text p {
+    margin: 0.5rem 0;
+    color: var(--text-color);
+    font-weight: 500;
   }
   
   .subtext {
     font-size: 0.9rem;
-    color: #666;
-    margin-top: 0.5rem;
+    color: var(--text-muted);
   }
   
   :global(.dropzone-active) {
-    border-color: #0066cc;
-    background-color: rgba(0, 102, 204, 0.05);
+    border-color: var(--primary-color);
+    box-shadow: inset 3px 3px 7px var(--shadow-dark), 
+                inset -3px -3px 7px var(--shadow-light);
   }
   
   :global(.dropzone-accept) {
-    border-color: #28a745;
-    background-color: rgba(40, 167, 69, 0.05);
+    border-color: var(--success-color);
+    box-shadow: inset 3px 3px 7px var(--shadow-dark), 
+                inset -3px -3px 7px var(--shadow-light);
   }
   
   :global(.dropzone-reject) {
-    border-color: #dc3545;
-    background-color: rgba(220, 53, 69, 0.05);
+    border-color: var(--danger-color);
+    box-shadow: inset 3px 3px 7px var(--shadow-dark), 
+                inset -3px -3px 7px var(--shadow-light);
   }
   
   :global(.dropzone-disabled) {
@@ -180,54 +198,83 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 1rem;
+    min-height: 130px;
+  }
+  
+  .uploading p {
+    color: var(--primary-color);
+    font-weight: 500;
   }
   
   progress {
     width: 100%;
-    height: 8px;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  
+  progress::-webkit-progress-bar {
+    background-color: var(--bg-color);
+  }
+  
+  progress::-webkit-progress-value {
+    background-color: var(--primary-color);
+  }
+  
+  progress::-moz-progress-bar {
+    background-color: var(--primary-color);
   }
   
   .error-message {
-    color: #dc3545;
-    margin-top: 0.5rem;
+    color: var(--danger-color);
+    margin-top: 1rem;
+    padding: 1rem;
+    font-weight: 500;
   }
   
   .files-list {
     margin-top: 1.5rem;
+    padding: 1.5rem;
   }
   
   ul {
     list-style: none;
     padding: 0;
+    margin: 0;
   }
   
   li {
     display: flex;
     align-items: center;
-    padding: 0.5rem;
-    border-bottom: 1px solid #eee;
+    padding: 1rem;
+    border-bottom: 1px solid var(--shadow-dark);
+    transition: background-color 0.2s;
+  }
+  
+  li:last-child {
+    border-bottom: none;
+  }
+  
+  li:hover {
+    background-color: rgba(0, 0, 0, 0.02);
   }
   
   .file-name {
     flex-grow: 1;
+    font-weight: 500;
+    color: var(--text-color);
   }
   
   .file-size {
-    color: #666;
-    margin: 0 1rem;
-  }
-  
-  .remove-button {
-    background: none;
-    border: none;
-    color: #dc3545;
-    cursor: pointer;
-    padding: 0.25rem 0.5rem;
+    color: var(--text-muted);
+    margin: 0 1.5rem;
     font-size: 0.9rem;
   }
   
-  .remove-button:hover {
-    text-decoration: underline;
+  .remove-button {
+    color: var(--danger-color);
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
   }
 </style> 

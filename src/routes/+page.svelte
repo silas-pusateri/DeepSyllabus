@@ -65,7 +65,7 @@
 </section>
 
 <section class="syllabus-form">
-  <div class="card">
+  <div class="neu-card form-card">
     <h2>Generate Your Syllabus</h2>
     
     <form on:submit|preventDefault={handleSubmit}>
@@ -76,6 +76,7 @@
           bind:value={synopsis}
           rows="6"
           placeholder="Enter a detailed description of your course, including the main topics, target audience, and learning objectives..."
+          class="neu-input"
           required
         ></textarea>
       </div>
@@ -83,16 +84,18 @@
       {#if syllabusId}
         <FileUpload syllabusId={syllabusId} on:filesAdded={handleFilesAdded} />
       {:else}
-        <p class="upload-note">
-          You can upload supplementary materials after generating the initial syllabus.
-        </p>
+        <div class="upload-note neu-inset">
+          <p>
+            You can upload supplementary materials after generating the initial syllabus.
+          </p>
+        </div>
       {/if}
       
       {#if error}
-        <div class="error-message">{error}</div>
+        <div class="error-message neu-inset">{error}</div>
       {/if}
       
-      <button type="submit" class="generate-button" disabled={isLoading}>
+      <button type="submit" class="neu-button primary generate-button" disabled={isLoading}>
         {isLoading ? 'Generating...' : 'Generate Syllabus'}
       </button>
     </form>
@@ -103,18 +106,21 @@
   <h2>How OpenSyllabus Works</h2>
   
   <div class="features-grid">
-    <div class="feature">
-      <h3>1. Describe Your Course</h3>
+    <div class="feature neu-card">
+      <div class="feature-number">1</div>
+      <h3>Describe Your Course</h3>
       <p>Enter a detailed description of your course, including the main topics, target audience, and learning objectives.</p>
     </div>
     
-    <div class="feature">
-      <h3>2. Upload Materials (Optional)</h3>
+    <div class="feature neu-card">
+      <div class="feature-number">2</div>
+      <h3>Upload Materials (Optional)</h3>
       <p>Upload existing course materials, references, or resources to enhance the generated syllabus.</p>
     </div>
     
-    <div class="feature">
-      <h3>3. Generate & Customize</h3>
+    <div class="feature neu-card">
+      <div class="feature-number">3</div>
+      <h3>Generate & Customize</h3>
       <p>Our AI creates a comprehensive syllabus with video resources, detailed explanations, and learning assessments.</p>
     </div>
   </div>
@@ -122,118 +128,135 @@
 
 <style>
   section {
-    margin-bottom: 3rem;
+    margin-bottom: 4rem;
   }
   
   .hero {
     text-align: center;
-    padding: 2rem 0;
+    padding: 1rem 0 3rem;
   }
   
   .hero h1 {
     font-size: 2.5rem;
-    margin-bottom: 1rem;
-    color: #0066cc;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+    text-shadow: 1px 1px 1px var(--shadow-light), 
+                -1px -1px 1px var(--shadow-dark);
   }
   
   .hero p {
     font-size: 1.2rem;
     max-width: 800px;
     margin: 0 auto;
-    color: #666;
+    color: var(--text-muted);
+    line-height: 1.7;
   }
   
-  .card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    padding: 2rem;
+  .form-card {
+    margin-bottom: 2rem;
   }
   
   h2 {
-    color: #0066cc;
+    color: var(--primary-color);
     margin-top: 0;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.8rem;
     font-size: 1.8rem;
+    text-shadow: 1px 1px 1px var(--shadow-light), 
+                -1px -1px 1px var(--shadow-dark);
+    text-align: center;
   }
   
   .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.8rem;
   }
   
   label {
     display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color);
+    padding-left: 0.5rem;
   }
   
   textarea {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
     font-family: inherit;
     resize: vertical;
+    font-size: 1rem;
+    color: var(--text-color);
   }
   
   .upload-note {
-    background-color: #f8f9fa;
-    padding: 1rem;
-    border-radius: 4px;
-    border-left: 4px solid #0066cc;
-    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.8rem;
   }
   
-  .error-message {
-    color: #dc3545;
-    margin-bottom: 1rem;
-  }
-  
-  .generate-button {
-    background-color: #0066cc;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .generate-button:hover:not(:disabled) {
-    background-color: #0056b3;
-  }
-  
-  .generate-button:disabled {
-    background-color: #66a3e0;
-    cursor: not-allowed;
-  }
-  
-  .features {
+  .upload-note p {
+    margin: 0;
+    color: var(--text-muted);
     text-align: center;
   }
   
+  .error-message {
+    color: var(--danger-color);
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    font-weight: 500;
+  }
+  
+  .generate-button {
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 1rem;
+    margin-top: 0.5rem;
+  }
+  
   .features h2 {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
   }
   
   .features-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    gap: 2.5rem;
   }
   
   .feature {
-    background-color: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    position: relative;
+    padding-top: 3rem;
+  }
+  
+  .feature-number {
+    position: absolute;
+    top: -20px;
+    left: calc(50% - 20px);
+    width: 40px;
+    height: 40px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.3rem;
+    box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.1),
+                -3px -3px 7px rgba(255, 255, 255, 0.6);
   }
   
   .feature h3 {
-    color: #0066cc;
+    color: var(--primary-color);
     margin-top: 0;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-size: 1.4rem;
+  }
+  
+  .feature p {
+    color: var(--text-muted);
+    margin: 0;
+    text-align: center;
+    line-height: 1.6;
   }
   
   @media (max-width: 768px) {

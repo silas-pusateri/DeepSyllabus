@@ -128,7 +128,7 @@
   }
 </script>
 
-<div class="syllabus-component" class:accepted={component.accepted}>
+<div class="syllabus-component neu-card" class:accepted={component.accepted}>
   <div class="component-header">
     <h3>
       {#if component.type === 'video'}
@@ -142,20 +142,20 @@
     
     <div class="action-buttons">
       {#if !component.accepted}
-        <button class="accept-button" on:click={acceptComponent}>Accept</button>
+        <button class="neu-button accept-button" on:click={acceptComponent}>Accept</button>
       {/if}
-      <button class="edit-button" on:click={startEditing}>Edit</button>
+      <button class="neu-button edit-button" on:click={startEditing}>Edit</button>
     </div>
   </div>
   
-  <div class="component-content">
+  <div class="component-content neu-inset">
     {#if component.type === 'video'}
       <div class="video-content">
         <h4>Video Idea</h4>
         <p>{parsedContent.idea || 'No video idea available'}</p>
         
         {#if parsedContent.link}
-          <div class="video-link">
+          <div class="video-link neu-inset">
             <h4>Reference Video</h4>
             <a href={parsedContent.link} target="_blank" rel="noopener noreferrer">
               {parsedContent.link}
@@ -207,10 +207,11 @@
         bind:value={feedback}
         placeholder="What would you like to improve about this component? (optional)"
         rows="3"
+        class="neu-input"
       ></textarea>
       
       <button 
-        class="regenerate-button" 
+        class="neu-button primary regenerate-button" 
         on:click={regenerateComponent}
         disabled={isRegenerating}
       >
@@ -221,95 +222,92 @@
   
   {#if isEditing}
     <div class="edit-modal">
-      <div class="edit-modal-content">
+      <div class="edit-modal-content neu-card">
         <h3>Edit {component.type} Component</h3>
         
         <textarea 
           bind:value={editedContent}
           rows="10"
+          class="neu-input"
         ></textarea>
         
         <div class="edit-buttons">
-          <button class="cancel-button" on:click={cancelEdit}>Cancel</button>
-          <button class="save-button" on:click={saveEdit}>Save Changes</button>
+          <button class="neu-button cancel-button" on:click={cancelEdit}>Cancel</button>
+          <button class="neu-button primary save-button" on:click={saveEdit}>Save Changes</button>
         </div>
       </div>
     </div>
   {/if}
   
   {#if error}
-    <div class="error-message">{error}</div>
+    <div class="error-message neu-inset">{error}</div>
   {/if}
 </div>
 
 <style>
   .syllabus-component {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
     transition: all 0.3s ease;
+    overflow: hidden;
   }
   
   .syllabus-component.accepted {
-    border-left: 4px solid #28a745;
+    position: relative;
+  }
+  
+  .syllabus-component.accepted::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 6px;
+    background: var(--success-color);
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
   }
   
   .component-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #eee;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--shadow-dark);
   }
   
   h3 {
     font-size: 1.5rem;
     margin: 0;
+    color: var(--primary-color);
+    font-family: 'Montserrat', sans-serif;
+    text-shadow: 1px 1px 1px var(--shadow-light), 
+                -1px -1px 1px var(--shadow-dark);
   }
   
   h4 {
     font-size: 1.2rem;
-    margin: 1rem 0 0.5rem;
+    margin: 1rem 0 0.8rem;
+    font-family: 'Montserrat', sans-serif;
+    color: var(--primary-dark);
   }
   
   .action-buttons {
     display: flex;
-    gap: 0.5rem;
-  }
-  
-  button {
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.2s;
+    gap: 1rem;
   }
   
   .accept-button {
-    background-color: #28a745;
-    color: white;
-    border: none;
-  }
-  
-  .accept-button:hover {
-    background-color: #218838;
+    color: var(--success-color);
   }
   
   .edit-button {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-  }
-  
-  .edit-button:hover {
-    background-color: #5a6268;
+    color: var(--primary-color);
   }
   
   .component-content {
+    padding: 1.5rem;
     margin-bottom: 1.5rem;
+    line-height: 1.6;
   }
   
   .video-content, .explanation-content, .assessment-content {
@@ -317,16 +315,19 @@
   }
   
   .video-link {
-    margin-top: 1rem;
+    margin-top: 1.5rem;
+    padding: 1rem;
   }
   
   .video-link a {
-    color: #0066cc;
+    color: var(--primary-color);
     text-decoration: none;
     word-break: break-all;
+    transition: color 0.2s;
   }
   
   .video-link a:hover {
+    color: var(--primary-dark);
     text-decoration: underline;
   }
   
@@ -336,38 +337,26 @@
   }
   
   .regenerate-section {
-    border-top: 1px solid #eee;
     padding-top: 1rem;
+    border-top: 1px solid var(--shadow-dark);
   }
   
   textarea {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin: 0.5rem 0 1rem;
+    margin: 0.8rem 0 1.2rem;
     font-family: inherit;
     resize: vertical;
+    color: var(--text-color);
   }
   
   .regenerate-button {
-    background-color: #0066cc;
-    color: white;
-    border: none;
-  }
-  
-  .regenerate-button:hover:not(:disabled) {
-    background-color: #0056b3;
-  }
-  
-  .regenerate-button:disabled {
-    background-color: #66a3e0;
-    cursor: not-allowed;
+    margin-top: 0.5rem;
   }
   
   .error-message {
-    color: #dc3545;
-    margin-top: 1rem;
+    color: var(--danger-color);
+    margin-top: 1.5rem;
+    padding: 1rem;
   }
   
   .edit-modal {
@@ -381,15 +370,13 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    padding: 1rem;
   }
   
   .edit-modal-content {
-    background-color: white;
-    padding: 2rem;
-    border-radius: 8px;
-    width: 80%;
+    width: 90%;
     max-width: 800px;
-    max-height: 80vh;
+    max-height: 90vh;
     overflow-y: auto;
   }
   
@@ -397,18 +384,14 @@
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
   }
   
   .cancel-button {
-    background-color: #6c757d;
-    color: white;
-    border: none;
+    color: var(--text-muted);
   }
   
   .save-button {
-    background-color: #28a745;
-    color: white;
-    border: none;
+    color: #fff;
   }
 </style> 
