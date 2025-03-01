@@ -30,11 +30,29 @@
         })
       });
       
+      // Check if the response is ok
       if (!response.ok) {
-        throw new Error('Failed to generate syllabus');
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          errorData?.error || `Server error: ${response.status}`
+        );
       }
       
-      const result = await response.json();
+      // Safely parse JSON response
+      let result;
+      try {
+        const text = await response.text();
+        result = JSON.parse(text);
+      } catch (parseError) {
+        console.error('JSON Parse Error:', parseError);
+        throw new Error(`Failed to parse response: ${parseError.message}`);
+      }
+      
+      // Validate the response has the expected structure
+      if (!result || !result.syllabus || !result.syllabus.id) {
+        throw new Error('Invalid response from server');
+      }
+      
       syllabusId = result.syllabus.id;
       
       // Navigate to the generated syllabus
