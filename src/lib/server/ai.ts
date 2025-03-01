@@ -58,9 +58,16 @@ export async function generateSyllabus(request: GenerateSyllabusRequest): Promis
 Your task is to generate three key components for a course syllabus based on a provided synopsis.
 Respond in JSON format with these three components:
 
-1. A video resource suggestion - Include an idea for a video and possibly a link if you know one.
-2. A detailed written explanation - Provide comprehensive content divided into logical sections.
-3. A measure of learning - Create an assessment like a quiz, test, or demonstration.
+1. A video resource suggestion - Include an "idea" for a video and possibly a "link" field if you know one.
+2. A detailed written explanation - Provide a "content" field with comprehensive text and a "sections" array of section titles.
+3. A measure of learning - Create an assessment with "type" and "content" fields.
+
+Your response must be valid JSON with this structure:
+{
+  "video": { "idea": "string", "link": "string" },
+  "explanation": { "content": "string", "sections": ["string"] },
+  "assessment": { "type": "string", "content": "string" }
+}
 
 ${filesContext}`;
 
@@ -68,7 +75,7 @@ ${filesContext}`;
   const userPrompt = `Please generate a syllabus for the following course synopsis:
 ${synopsis}
 
-Respond with a JSON object containing a video suggestion, a detailed explanation, and a learning assessment.`;
+Respond with a properly formatted JSON object containing a video suggestion, a detailed explanation, and a learning assessment.`;
 
   try {
     const response = await openai!.chat.completions.create({
@@ -124,20 +131,40 @@ export async function regenerateComponent(
     }
   }
   
+  const componentFormats = {
+    video: `{
+  "idea": "A clear description of the video content",
+  "link": "Optional URL to a relevant video resource"
+}`,
+    explanation: `{
+  "content": "The main comprehensive explanation text",
+  "sections": ["Section 1 title", "Section 2 title", "Section 3 title"]
+}`,
+    assessment: `{
+  "type": "Type of assessment (quiz, test, project, etc.)",
+  "content": "The full text content of the assessment"
+}`
+  };
+  
   const componentPrompts = {
-    video: 'Generate a video resource suggestion with an idea and optional link.',
-    explanation: 'Generate a detailed written explanation divided into logical sections.',
-    assessment: 'Generate a measure of learning such as a quiz, test, or demonstration.'
+    video: 'Generate a video resource suggestion with an idea for a video and an optional link. Return a JSON object with "idea" and "link" fields.',
+    explanation: 'Generate a detailed written explanation divided into logical sections. Return a JSON object with "content" (text) and "sections" (array of section titles) fields.',
+    assessment: 'Generate a measure of learning such as a quiz, test, or demonstration. Return a JSON object with "type" and "content" fields.'
   };
   
   const systemPrompt = `You are a specialized AI created to help educators generate course syllabus components.
 Your task is to generate a ${componentType} component for a course syllabus based on a provided synopsis.
+Return your response in JSON format exactly like this example:
+
+${componentFormats[componentType]}
+
 ${feedback ? `The user provided this feedback on a previous generation: ${feedback}` : ''}`;
 
   const userPrompt = `Please generate a ${componentType} component for the following course synopsis:
 ${synopsis}
 
-${componentPrompts[componentType]}`;
+${componentPrompts[componentType]}
+Format your response as valid JSON.`;
 
   try {
     const response = await openai!.chat.completions.create({
