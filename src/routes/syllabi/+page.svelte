@@ -40,29 +40,29 @@
 <div class="syllabi-container">
   <header class="page-header">
     <h1>My Syllabi</h1>
-    <a href="/" class="create-button">Create New Syllabus</a>
+    <a href="/" class="neu-button primary">Create New Syllabus</a>
   </header>
   
   {#if isLoading}
-    <div class="loading">
+    <div class="loading neu-card">
       <p>Loading syllabi...</p>
     </div>
   {:else if error}
-    <div class="error-container">
+    <div class="error-container neu-card">
       <h2>Error</h2>
       <p>{error}</p>
-      <button class="retry-button" on:click={fetchSyllabi}>Retry</button>
+      <button class="neu-button retry-button" on:click={fetchSyllabi}>Retry</button>
     </div>
   {:else if syllabi.length === 0}
-    <div class="empty-state">
+    <div class="empty-state neu-card">
       <h2>No Syllabi Found</h2>
       <p>You haven't created any syllabi yet. Get started by creating your first syllabus!</p>
-      <a href="/" class="create-button">Create New Syllabus</a>
+      <a href="/" class="neu-button primary">Create New Syllabus</a>
     </div>
   {:else}
     <div class="syllabi-grid">
       {#each syllabi as syllabus}
-        <a href={`/syllabus/${syllabus.id}`} class="syllabus-card">
+        <a href={`/syllabus/${syllabus.id}`} class="syllabus-card neu-card">
           <h2>{syllabus.title}</h2>
           <p class="synopsis">{truncate(syllabus.synopsis, 120)}</p>
           <div class="card-footer">
@@ -89,23 +89,9 @@
   h1 {
     font-size: 2.5rem;
     margin: 0;
-    color: #0066cc;
-  }
-  
-  .create-button {
-    display: inline-block;
-    background-color: #0066cc;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: background-color 0.2s;
-  }
-  
-  .create-button:hover {
-    background-color: #0056b3;
+    color: var(--primary-color);
+    text-shadow: 1px 1px 1px var(--shadow-light), 
+                -1px -1px 1px var(--shadow-dark);
   }
   
   .loading {
@@ -114,42 +100,35 @@
     align-items: center;
     min-height: 200px;
     font-size: 1.2rem;
-    color: #666;
+    color: var(--text-muted);
   }
   
   .error-container {
     text-align: center;
     padding: 2rem;
-    background-color: #fff3f3;
-    border-radius: 8px;
-    border: 1px solid #ffcdd2;
+    border-radius: var(--border-radius);
+  }
+  
+  .error-container h2 {
+    color: var(--danger-color);
   }
   
   .retry-button {
-    background-color: #0066cc;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    cursor: pointer;
     margin-top: 1rem;
   }
   
   .empty-state {
     text-align: center;
     padding: 3rem;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-radius: var(--border-radius);
   }
   
   .empty-state h2 {
-    color: #0066cc;
+    color: var(--primary-color);
     margin-top: 0;
   }
   
-  .empty-state .create-button {
+  .empty-state .neu-button {
     margin-top: 1.5rem;
   }
   
@@ -161,35 +140,35 @@
   
   .syllabus-card {
     display: block;
-    background-color: white;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     color: inherit;
     text-decoration: none;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.3s ease;
   }
   
   .syllabus-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 9px 9px 18px var(--shadow-dark), 
+                -9px -9px 18px var(--shadow-light);
   }
   
   .syllabus-card h2 {
     font-size: 1.5rem;
     margin-top: 0;
     margin-bottom: 0.75rem;
-    color: #0066cc;
+    color: var(--primary-color);
+    font-family: 'Montserrat', sans-serif;
   }
   
   .synopsis {
-    color: #666;
+    color: var(--text-color);
     margin-bottom: 1.5rem;
     line-height: 1.5;
   }
   
   .card-footer {
-    color: #888;
+    color: var(--text-muted);
     font-size: 0.9rem;
   }
   

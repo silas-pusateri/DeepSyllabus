@@ -3,14 +3,48 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { generateSyllabus } from '$lib/server/ai';
 import { createSyllabus, createComponent } from '$lib/server/db';
 import type { GenerateSyllabusRequest } from '$lib/types';
+import { createPool } from '@vercel/postgres';
+
+const pool = createPool({
+  connectionTimeoutMillis: 5000, // Lower timeout to fail fast
+  max: 5 // Limit pool size
+});
 
 export async function POST({ request }: RequestEvent) {
+  // Initialize response
+  const responseStream = new TransformStream();
+  const writer = responseStream.writable.getWriter();
+  
+  // Start processing in the background
+  console.time('total-request');
+  console.time('openai-call');
+  processSyllabus(request, writer).catch(error => {
+    console.error('Error processing syllabus:', error);
+  });
+  console.timeEnd('openai-call');
+  console.time('database-call');
+  await writer.close();
+  console.timeEnd('database-call');
+  console.timeEnd('total-request');
+  
+  // Return the stream immediately
+  return new Response(responseStream.readable, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive'
+    }
+  });
+}
+
+async function processSyllabus(request, writer) {
   try {
     const requestData: GenerateSyllabusRequest = await request.json();
     const { synopsis, files } = requestData;
     
     if (!synopsis) {
-      return json({ error: 'Synopsis is required' }, { status: 400 });
+      await writer.write(new TextEncoder().encode(JSON.stringify({ status: 'error', message: 'Synopsis is required' }) + '\n\n'));
+      return;
     }
     
     // Generate AI response
@@ -45,12 +79,12 @@ export async function POST({ request }: RequestEvent) {
     // Add the components to the syllabus object
     syllabus.components = [videoComponent, explanationComponent, assessmentComponent];
     
-    return json({
-      syllabus,
-      aiResponse
-    });
+    await writer.write(new TextEncoder().encode(JSON.stringify({ status: 'processing' }) + '\n\n'));
+    
+    await writer.write(new TextEncoder().encode(JSON.stringify({ status: 'complete', data: { syllabus, aiResponse } }) + '\n\n'));
   } catch (error) {
-    console.error('Error generating syllabus:', error);
-    return json({ error: 'Failed to generate syllabus' }, { status: 500 });
+    await writer.write(new TextEncoder().encode(JSON.stringify({ status: 'error', message: error.message }) + '\n\n'));
+  } finally {
+    await writer.close();
   }
 } 
