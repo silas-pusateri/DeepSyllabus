@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import type { ChatCompletionMessageParam } from 'openai/resources';
 import type { AIResponse, CourseFile, GenerateSyllabusRequest } from '$lib/types';
 import { env } from '$env/dynamic/private';
 
@@ -78,12 +79,17 @@ ${synopsis}
 Respond with a properly formatted JSON object containing a video suggestion, a detailed explanation, and a learning assessment.`;
 
   try {
+    const messages: ChatCompletionMessageParam[] = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ];
+    
+    // Always add a specific JSON instruction message to ensure the requirement is met
+    messages.push({ role: 'user', content: 'Make sure to format your response as JSON.' });
+    
     const response = await openai!.chat.completions.create({
       model: 'gpt-4-turbo',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
+      messages,
       response_format: { type: 'json_object' }
     });
     
@@ -167,12 +173,17 @@ ${componentPrompts[componentType]}
 Format your response as valid JSON.`;
 
   try {
+    const messages: ChatCompletionMessageParam[] = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ];
+    
+    // Always add a specific JSON instruction message to ensure the requirement is met
+    messages.push({ role: 'user', content: 'Make sure to format your response as JSON.' });
+    
     const response = await openai!.chat.completions.create({
       model: 'gpt-4-turbo',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
+      messages,
       response_format: { type: 'json_object' }
     });
     
