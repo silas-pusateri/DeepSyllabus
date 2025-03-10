@@ -1,18 +1,23 @@
 import OpenAI from 'openai';
 import type { ChatCompletionMessageParam } from 'openai/resources';
 import type { AIResponse, CourseFile, GenerateSyllabusRequest } from '$lib/types';
-import { env } from '$env/dynamic/private';
+import { shouldMockOpenAI, config } from './config';
 
-// Check if we're in development mode
-const isDevelopmentMode = !env.OPENAI_API_KEY || process.env.NODE_ENV === 'development';
+// Check if we should use mock responses
+const useMockOpenAI = shouldMockOpenAI();
 
 let openai: OpenAI | null = null;
 
-// Initialize OpenAI client if API key is available
-if (!isDevelopmentMode) {
-  openai = new OpenAI({
-    apiKey: env.OPENAI_API_KEY
-  });
+// Initialize OpenAI client if API key is available and we're not using mocks
+if (!useMockOpenAI && config.ai.openaiApiKey) {
+  try {
+    openai = new OpenAI({
+      apiKey: config.ai.openaiApiKey
+    });
+    console.log('OpenAI client initialized');
+  } catch (error) {
+    console.error('Failed to initialize OpenAI client:', error);
+  }
 }
 
 // Mock responses for development mode
@@ -37,9 +42,9 @@ const mockAssessmentResponse = {
 export async function generateSyllabus(request: GenerateSyllabusRequest): Promise<AIResponse> {
   const { synopsis, files } = request;
   
-  // Return mock data in development mode
-  if (isDevelopmentMode) {
-    console.log('[DEV] Using mock AI response for syllabus generation');
+  // Return mock data if configured to use mocks
+  if (useMockOpenAI) {
+    console.log('[MOCK] Using mock OpenAI response for syllabus generation');
     return {
       video: mockVideoResponse,
       explanation: mockExplanationResponse,
@@ -124,9 +129,9 @@ export async function regenerateComponent(
   synopsis: string,
   feedback?: string
 ): Promise<any> {
-  // Return mock data in development mode
-  if (isDevelopmentMode) {
-    console.log(`[DEV] Using mock AI response for ${componentType} regeneration`);
+  // Return mock data if configured to use mocks
+  if (useMockOpenAI) {
+    console.log(`[MOCK] Using mock OpenAI response for ${componentType} regeneration`);
     
     if (componentType === 'video') {
       return mockVideoResponse;

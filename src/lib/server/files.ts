@@ -2,10 +2,10 @@ import { put, del } from '@vercel/blob';
 import type { CourseFile } from '$lib/types';
 import { addFile } from './db';
 import { generateId } from '$lib/utils/helpers';
-import { env } from '$env/dynamic/private';
+import { shouldMockStorage } from './config';
 
-// Check if we're in development mode without database credentials
-const isDevelopmentMode = !env.POSTGRES_URL && process.env.NODE_ENV !== 'production';
+// Check if we should use mock storage
+const useMockStorage = shouldMockStorage();
 
 /**
  * Upload a file to Vercel Blob storage and add it to the database
@@ -20,7 +20,7 @@ export async function uploadFile(
     const filename = `${id}-${file.name}`;
     
     // In development mode, create a mock URL
-    if (isDevelopmentMode) {
+    if (useMockStorage) {
       const mockUrl = `/mock-uploads/${filename}`;
       
       // Add the file to the database
@@ -63,8 +63,8 @@ export async function uploadFile(
 export async function deleteFile(url: string): Promise<void> {
   try {
     // Skip actual deletion in development mode
-    if (isDevelopmentMode) {
-      console.log(`[DEV] Would delete file: ${url}`);
+    if (useMockStorage) {
+      console.log(`[MOCK] Would delete file: ${url}`);
       return;
     }
     

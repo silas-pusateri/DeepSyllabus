@@ -21,10 +21,20 @@
   let parsedContent: any = {};
   
   $: {
-    try {
-      parsedContent = JSON.parse(component.content);
-    } catch (e) {
-      parsedContent = { content: component.content };
+    if (component.type === 'explanation') {
+      try {
+        // For explanation, try to parse JSON but fall back to raw content
+        parsedContent = JSON.parse(component.content);
+      } catch (e) {
+        parsedContent = component.content;
+      }
+    } else {
+      try {
+        parsedContent = JSON.parse(component.content);
+      } catch (e) {
+        console.error('Parse error:', e);
+        parsedContent = null;
+      }
     }
   }
 
@@ -165,36 +175,81 @@
       </div>
     {:else if component.type === 'explanation'}
       <div class="explanation-content">
-        <div class="explanation-text">
-          {#if typeof parsedContent.content === 'string'}
+        {#if parsedContent}
+          <div class="content-text">
             <p>{parsedContent.content}</p>
-          {:else}
-            <p>No explanation content available</p>
-          {/if}
-        </div>
-        
-        {#if parsedContent.sections && parsedContent.sections.length > 0}
-          <div class="explanation-sections">
-            <h4>Sections</h4>
-            <ul>
-              {#each parsedContent.sections as section}
-                <li>{section}</li>
-              {/each}
-            </ul>
           </div>
+          {#if parsedContent.sections}
+            <div class="sections">
+              <h4>Outline</h4>
+              <ul>
+                {#each parsedContent.sections as section}
+                  <li>{section}</li>
+                {/each}
+              </ul>
+            </div>
+          {/if}
+        {:else}
+          <p>No explanation content available</p>
         {/if}
       </div>
     {:else if component.type === 'assessment'}
       <div class="assessment-content">
-        <h4>Assessment Type: {parsedContent.type || 'Quiz'}</h4>
-        
-        <div class="assessment-text">
-          {#if typeof parsedContent.content === 'string'}
-            <p>{parsedContent.content}</p>
-          {:else}
-            <p>No assessment content available</p>
-          {/if}
-        </div>
+        {#if parsedContent}
+          <div class="assessment-sections">
+            {#if parsedContent.content?.type === 'knowledge_check' && parsedContent.content?.questions}
+              <div class="section">
+                <h4>Knowledge Check</h4>
+                <div class="questions">
+                  {#each parsedContent.content.questions as question, i}
+                    <div class="question neu-inset">
+                      <p class="question-text">Q{i + 1}: {question.question}</p>
+                      {#if question.type === 'multiple_choice' && question.options}
+                        <ul class="options">
+                          {#each question.options as option, j}
+                            <li class="option">
+                              <span class="option-letter">{String.fromCharCode(97 + j)})</span> {option}
+                            </li>
+                          {/each}
+                        </ul>
+                      {/if}
+                    </div>
+                  {/each}
+                </div>
+              </div>
+            {:else if parsedContent.content?.type === 'implementation_challenge' && parsedContent.content?.challenge}
+              <div class="section">
+                <h4>Implementation Challenge</h4>
+                <div class="challenge neu-inset">
+                  <h5>{parsedContent.content.challenge.title}</h5>
+                  <p class="description">{parsedContent.content.challenge.description}</p>
+                  {#if parsedContent.content.challenge.requirements}
+                    <div class="requirements">
+                      <h6>Requirements:</h6>
+                      <ul>
+                        {#each parsedContent.content.challenge.requirements as req}
+                          <li>{req}</li>
+                        {/each}
+                      </ul>
+                    </div>
+                  {/if}
+                  {#if parsedContent.content.challenge.starterCode}
+                    <div class="starter-code">
+                      <h6>Starter Code:</h6>
+                      <pre><code>{parsedContent.content.challenge.starterCode}</code></pre>
+                    </div>
+                  {/if}
+                </div>
+              </div>
+            {:else}
+              <div class="raw-content" style="white-space: pre-wrap;">
+                {JSON.stringify(parsedContent, null, 2)}
+              </div>
+            {/if}
+          </div>
+        {:else}
+          <p>No assessment content available</p>
+        {/if}
       </div>
     {/if}
   </div>
@@ -337,8 +392,12 @@
   }
   
   .regenerate-section {
-    padding-top: 1rem;
-    border-top: 1px solid var(--shadow-dark);
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border-radius: 8px;
+    background-color: var(--background-color);
+    box-shadow: inset 2px 2px 5px var(--shadow-dark),
+                inset -2px -2px 5px var(--shadow-light);
   }
   
   textarea {
@@ -350,7 +409,8 @@
   }
   
   .regenerate-button {
-    margin-top: 0.5rem;
+    margin-top: 1rem;
+    width: 100%;
   }
   
   .error-message {
@@ -393,5 +453,278 @@
   
   .save-button {
     color: #fff;
+  }
+  
+  .section {
+    margin-bottom: 2rem;
+  }
+  
+  .section h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+  }
+  
+  .section h5 {
+    color: var(--primary-dark);
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
+  }
+  
+  .section h6 {
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+  }
+  
+  .question, .challenge {
+    margin-bottom: 1.5rem;
+    padding: 1.2rem;
+  }
+  
+  .question-text {
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  
+  .options {
+    list-style-type: lower-alpha;
+    padding-left: 1.5rem;
+  }
+  
+  .options li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .requirements {
+    margin-top: 1rem;
+  }
+  
+  .requirements ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+  }
+  
+  .requirements li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .research-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .section {
+    padding: 1.5rem;
+    background: var(--background-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-elevation-medium);
+  }
+  
+  .section h4 {
+    color: var(--primary-color);
+    margin: 0 0 1rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    border-bottom: 2px solid var(--primary-light);
+    padding-bottom: 0.5rem;
+  }
+  
+  .section p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--text-color);
+  }
+  
+  .overview-section {
+    border-left: 4px solid var(--primary-color);
+  }
+  
+  .conclusion-section {
+    border-left: 4px solid var(--success-color);
+  }
+  
+  .explanation-content {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  
+  .research-title {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    margin: 0 0 2rem;
+    text-align: center;
+    font-weight: 600;
+  }
+  
+  .content-text {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-color);
+  }
+  
+  .content-text strong {
+    color: var(--primary-dark);
+    font-weight: 600;
+  }
+  
+  .content-text li {
+    margin-bottom: 0.8rem;
+    line-height: 1.6;
+    list-style-type: disc;
+    margin-left: 1.5rem;
+  }
+  
+  .content-text br + br {
+    margin-top: 1rem;
+  }
+  
+  .section {
+    padding: 2rem;
+    margin-bottom: 2rem;
+    background: var(--background-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-elevation-medium);
+  }
+  
+  .section h4 {
+    color: var(--primary-color);
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid var(--primary-light);
+  }
+  
+  .overview-section {
+    border-left: 4px solid var(--primary-color);
+    background: linear-gradient(to right, var(--primary-light-transparent), var(--background-color));
+  }
+  
+  .content-section {
+    border-left: 4px solid var(--secondary-color);
+  }
+  
+  .conclusion-section {
+    border-left: 4px solid var(--success-color);
+    background: linear-gradient(to right, var(--success-light-transparent), var(--background-color));
+  }
+  
+  .assessment-content {
+    margin-top: 1rem;
+  }
+  
+  .question {
+    background: var(--background-color);
+    border-radius: var(--border-radius);
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+  }
+  
+  .question-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--primary-dark);
+    margin-bottom: 1rem;
+  }
+  
+  .option {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .option-letter {
+    color: var(--primary-color);
+    font-weight: 500;
+  }
+  
+  .short-answer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+  }
+  
+  .sample-answer {
+    font-style: italic;
+    color: var(--text-muted);
+    margin: 0.5rem 0;
+  }
+  
+  .rubric {
+    margin-top: 1rem;
+  }
+  
+  .description {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+  
+  .requirements, .objectives, .deliverables, .evaluation, .timeline {
+    margin-top: 1.5rem;
+  }
+  
+  .test-cases {
+    margin-top: 1.5rem;
+  }
+  
+  .test-case {
+    background: var(--background-light);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--border-radius);
+  }
+  
+  .test-case code {
+    background: var(--code-background);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+  
+  .test-case .explanation {
+    margin-top: 0.5rem;
+    font-style: italic;
+    color: var(--text-muted);
+  }
+  
+  .starter-code {
+    margin-top: 1.5rem;
+  }
+  
+  .starter-code pre {
+    background: var(--code-background);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    overflow-x: auto;
+  }
+  
+  .starter-code code {
+    font-family: monospace;
+    line-height: 1.4;
+  }
+  
+  .key-points {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+  }
+  
+  h6 {
+    color: var(--text-color);
+    font-size: 1rem;
+    margin: 1rem 0 0.5rem;
+  }
+  
+  ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
+  }
+  
+  li {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
   }
 </style> 

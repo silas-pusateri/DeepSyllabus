@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import SyllabusComponent from '$lib/components/SyllabusComponent.svelte';
+  import VideoResourceComponent from '$lib/components/VideoResourceComponent.svelte';
   import FileUpload from '$lib/components/FileUpload.svelte';
   import type { Syllabus, CourseFile, SyllabusComponent as SyllabusComponentType } from '$lib/types';
   import { formatDate } from '$lib/utils/helpers';
@@ -56,7 +57,7 @@
   
   function getComponentByType(type: 'video' | 'explanation' | 'assessment'): SyllabusComponentType | undefined {
     if (!syllabus) return undefined;
-    return syllabus.components.find(c => c.type === type);
+    return syllabus.components.find((c: SyllabusComponentType) => c.type === type);
   }
 </script>
 
@@ -88,17 +89,10 @@
       </div>
     </header>
     
-    <section class="files-section">
-      <FileUpload 
-        syllabusId={syllabus.id} 
-        existingFiles={syllabus.files}
-        on:filesAdded={handleFilesAdded}
-      />
-    </section>
-    
     <section class="components-section">
+      <!-- Video Resources Component -->
       {#if getComponentByType('video')}
-        <SyllabusComponent 
+        <VideoResourceComponent 
           component={getComponentByType('video')!} 
           syllabusId={syllabus.id}
           on:accepted={handleComponentUpdated}
@@ -107,6 +101,7 @@
         />
       {/if}
       
+      <!-- Written Explanation Component -->
       {#if getComponentByType('explanation')}
         <SyllabusComponent 
           component={getComponentByType('explanation')!} 
@@ -117,6 +112,7 @@
         />
       {/if}
       
+      <!-- Assessment Component -->
       {#if getComponentByType('assessment')}
         <SyllabusComponent 
           component={getComponentByType('assessment')!} 
@@ -126,6 +122,15 @@
           on:edited={handleComponentUpdated}
         />
       {/if}
+
+      <!-- File Upload Component -->
+      <section class="files-section">
+        <FileUpload 
+          syllabusId={syllabus.id} 
+          existingFiles={syllabus.files}
+          on:filesAdded={handleFilesAdded}
+        />
+      </section>
     </section>
     
     <section class="export-section neu-card">
@@ -207,14 +212,8 @@
     line-height: 1.6;
   }
   
-  .files-section, .components-section {
-    margin-bottom: 3rem;
-  }
-  
   .components-section {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+    margin-bottom: 3rem;
   }
   
   .section-title {
@@ -262,5 +261,10 @@
       width: 100%;
       min-width: auto;
     }
+  }
+  
+  .files-section {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
   }
 </style> 

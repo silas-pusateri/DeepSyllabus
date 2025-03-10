@@ -26,7 +26,7 @@
         },
         body: JSON.stringify({
           synopsis,
-          files
+          depth: 3
         })
       });
       
@@ -49,17 +49,38 @@
       }
       
       // Validate the response has the expected structure
-      if (!result || !result.syllabus || !result.syllabus.id) {
+      if (!result || !result.success || !result.structured) {
         throw new Error('Invalid response from server');
       }
-      
-      syllabusId = result.syllabus.id;
+
+      // Create a new syllabus in the database with the generated content
+      const syllabusResponse = await fetch('/api/syllabus', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: synopsis.split('.')[0], // Use first sentence as title
+          synopsis,
+          content: {
+            explanation: result.structured.explanation,
+            assessment: result.assessment
+          }
+        })
+      });
+
+      if (!syllabusResponse.ok) {
+        throw new Error('Failed to save syllabus');
+      }
+
+      const syllabusResult = await syllabusResponse.json();
+      syllabusId = syllabusResult.syllabus.id;
       
       // Navigate to the generated syllabus
       goto(`/syllabus/${syllabusId}`);
     } catch (err) {
       console.error('Error generating syllabus:', err);
-      error = err instanceof Error ? err.message : 'Failed to generate syllabus';
+      error = err instanceof Error ? err.message : 'An unexpected error occurred';
     } finally {
       isLoading = false;
     }

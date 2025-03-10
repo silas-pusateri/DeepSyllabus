@@ -30,6 +30,7 @@ export interface GenerateSyllabusRequest {
   synopsis: string;
   files: CourseFile[];
   preferences?: {
+    depth?: number;
     videoStyle?: string;
     explainationStyle?: string;
     assessmentStyle?: string;
